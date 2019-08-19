@@ -12,10 +12,11 @@ export default ({ history }) => {
 
         const response = await api.post('/user', {
             user: username
-        }).catch(err => console.log(err.response))
+        })
 
-        console.log(response)
-        history.push('/main')
+        const { id } = response.data
+
+        history.push(`/dev/${id}`)
     }
 
     return  (

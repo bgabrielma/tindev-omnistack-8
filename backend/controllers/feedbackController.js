@@ -23,7 +23,7 @@ module.exports = app => {
         id_receiver: destination
       })
       .then(_ => res.status(200).send({ ok: true }))
-      .catch(err => res.status(403).send(err))
+      .catch(_err => res.status(403).send({ giver, destination }))
   }
 
   const getLikes = (req, res) => {

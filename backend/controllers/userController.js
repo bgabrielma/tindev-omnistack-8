@@ -54,6 +54,8 @@ module.exports = app => {
   }
 
   const get = async (req, res) => {
+    const { giver: id } = req.headers
+
     if (!req.headers.authorization) {
       return res.status(403).send(invalidDataReceived)
     }
@@ -64,7 +66,23 @@ module.exports = app => {
       return res.status(401).send(errorInvalidKey(req))
     }
 
+    if (!(id)) {
+      return res.status(403).send(invalidDataReceived)
+    }
+
     app.db('user')
+      .select('user.*')
+      .whereNotIn('id', function () {
+        this.select('id_receiver')
+          .from('likes')
+          .where('id_giver', '=', id)
+      })
+      .whereNotIn('id', function () {
+        this.select('id_receiver')
+          .from('dislikes')
+          .where('id_giver', '=', id)
+      })
+      .whereNot('user.id', id)
       .then(users => res.status(200).send(users))
       .catch(err => res.status(401).send(err))
   }

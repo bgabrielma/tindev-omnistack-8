@@ -8,7 +8,7 @@ export default () => {
     return (
         <BrowserRouter>
             <Route path="/" exact component={Login}/>
-            <Route path="/main" exact component={Main}/>
+            <Route path="/dev/:id" exact component={Main}/>
         </BrowserRouter>
     )
 }  
