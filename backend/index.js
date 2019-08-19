@@ -1,7 +1,7 @@
 const app = require('express')()
 const db = require('./config/db')
 const consign = require('consign')
-const port = 3000
+const port = 3333
 
 consign()
   .include('./config/middlewares.js')

@@ -1,40 +1,73 @@
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcryptjs')
-const { authSecret } = require('../.env')
+const axios = require('axios')
+const { auth, errorInvalidKey, invalidDataReceived } = require('../utils/functions')
 
 module.exports = app => {
-  const generateHash = (password, callback) => {
-    bcrypt.genSalt(10, (_err, salt) => {
-      bcrypt.hash(password, salt, (_err, hash) => callback(hash))
-    })
+  const findUserByUsername = user => {
+    return app.db('user').first().where({ user })
   }
 
-  const generateJwt = (data) => {
-    return jwt.sign({
-      payload: data
-    }, authSecret, { expiresIn: '10d' })
+  const save = async (req, res) => {
+    if (!req.headers.authorization) {
+      return res.status(403).send(invalidDataReceived)
+    }
+
+    const isValid = auth(req.headers.authorization.split(' ')[1] || '')
+    const { user } = req.body
+
+    if (!isValid) {
+      return res.status(401).send(errorInvalidKey(req))
+    }
+
+    if (!(user)) {
+      return res.status(403).send(invalidDataReceived)
+    }
+
+    const response = await axios.get(`https://api.github.com/users/${user}`)
+      .catch(err => { return res.status(400).json(err) })
+
+    // eslint-disable-next-line camelcase
+    const { avatar_url: avatar, bio } = response.data
+
+    app.db('user')
+      .insert({ user, avatar: avatar, bio })
+      .then(_ => {
+        findUserByUsername(user)
+          .catch(err => res.status(401).json(err))
+          .then(data => res.status(200).json(data))
+      })
+      .catch(err => {
+        if (err.sqlState === '23000') {
+          app.db('user')
+            .first()
+            .where({ user })
+            .update({ avatar, bio })
+            .then(_ => {
+              findUserByUsername(user)
+                .catch(err => res.status(401).json(err))
+                .then(data => res.status(200).json(data))
+            })
+            .catch(err => res.json(err))
+        } else {
+          res.status(400).json(err)
+        }
+      })
   }
 
-  const save = (req, res) => {
-    const { password } = req.body
+  const get = async (req, res) => {
+    if (!req.headers.authorization) {
+      return res.status(403).send(invalidDataReceived)
+    }
 
-    generateHash(password, hash => {
-      const id = generateJwt({ id: 'raw23', email: 'rawbgabrielma.dev.pt' })
-      res.status(200).send({ jwt: id })
-    })
+    const isValid = auth(req.headers.authorization.split(' ')[1] || '')
+
+    if (!isValid) {
+      return res.status(401).send(errorInvalidKey(req))
+    }
+
+    app.db('user')
+      .then(users => res.status(200).send(users))
+      .catch(err => res.status(401).send(err))
   }
 
-  const verify = (req, res) => {
-    const accessKey = req.headers.authorization.split(' ')[1]
-    jwt.verify(accessKey, authSecret, (err, decoded) => {
-      if (err) {
-        res.status(401).send({ response: err })
-      } else {
-        const { payload } = decoded
-        res.status(200).send({ payload })
-      }
-    })
-  }
-
-  return { save, verify }
+  return { save, get }
 }
