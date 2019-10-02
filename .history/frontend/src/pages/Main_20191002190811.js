@@ -11,6 +11,8 @@ import api from '../services/api'
 export default ({ match }) => {
 
     const [users, setUsers] = useState([])
+
+    
     async function loadUsers() {
         const response = await api.get('/user', {
             headers: {

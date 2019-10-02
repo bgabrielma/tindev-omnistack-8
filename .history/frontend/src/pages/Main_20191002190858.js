@@ -23,7 +23,7 @@ export default ({ match }) => {
     }
 
     useEffect(() => {
-        loadUsers();
+        loadUsers();ws
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [match.params.id])
 
