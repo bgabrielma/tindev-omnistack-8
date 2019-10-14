@@ -32,9 +32,25 @@ module.exports = app => {
         id_receiver: giver
       })
       .then(res => {
-        if (!res) {
+        console.log(res)
+        if (res.length > 0) {
           /* match */
+          const loggedSocket = app.connectedUsers[giver]
+          const targetSocket = app.connectedUsers[destination]
 
+          if (loggedSocket) {
+            app.db('user').first().where({ id: destination })
+              .then(data => {
+                app.io.to(loggedSocket).emit('match', data)
+              })
+          }
+
+          if (targetSocket) {
+            app.db('user').first().where({ id: giver })
+              .then(data => {
+                app.io.to(targetSocket).emit('match', data)
+              })
+          }
         }
       })
       .catch(err => console.log(err))

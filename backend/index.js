@@ -8,6 +8,10 @@ const app = express()
 const server = app.listen(port, () => console.log(`Server running on port ${port}`))
 const io = require('socket.io').listen(server)
 
+// socket connections
+
+const connectedUsers = {}
+
 consign()
   .include('./config/middlewares.js')
   .then('./controllers')
@@ -16,6 +20,8 @@ consign()
 
 // declare variable driver into app
 app.db = db
+app.io = io
+app.connectedUsers = connectedUsers
 
 app.get('/', (req, res) => {
   res.status(404).send('Not found')
@@ -24,5 +30,8 @@ app.get('/', (req, res) => {
 io.set('origins', '*:*')
 
 io.on('connection', socket => {
-  console.log('Nova conexão', socket.id)
+  const { user } = socket.handshake.query
+  connectedUsers[user] = socket.id
+
+  console.log(user, socket.id)
 })
