@@ -6,10 +6,10 @@ import logo from '../assets/logo.svg';
 import dislike from '../assets/dislike.svg';
 import like from '../assets/like.svg';
 
+import io from 'socket.io-client'
 import api from '../services/api'
 
 export default ({ match }) => {
-
     const [users, setUsers] = useState([])
     async function loadUsers() {
         const response = await api.get('/user', {
@@ -25,6 +25,10 @@ export default ({ match }) => {
     useEffect(() => {
         loadUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [match.params.id])
+
+    useEffect(() => {
+        const socket = io('http://localhost:3333')
     }, [match.params.id])
 
     async function handleDislike(id) {

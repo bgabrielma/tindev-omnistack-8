@@ -16,7 +16,8 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.19.2",
     "moment": "^2.24.0",
-    "mysql2": "^1.6.5"
+    "mysql2": "^1.6.5",
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "nodemon": "^1.19.1",

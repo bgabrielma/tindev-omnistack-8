@@ -13,7 +13,6 @@ export default ({ history }) => {
         const response = await api.post('/user', {
             user: username
         })
-
         const { id } = response.data
 
         history.push(`/dev/${id}`)

@@ -24,6 +24,20 @@ module.exports = app => {
       })
       .then(_ => res.status(200).send({ ok: true }))
       .catch(_err => res.status(403).send({ giver, destination }))
+
+    // verify if match would exits
+    app.db('likes')
+      .where({
+        id_giver: destination,
+        id_receiver: giver
+      })
+      .then(res => {
+        if (!res) {
+          /* match */
+
+        }
+      })
+      .catch(err => console.log(err))
   }
 
   const getLikes = (req, res) => {
