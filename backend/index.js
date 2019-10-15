@@ -27,8 +27,6 @@ app.get('/', (req, res) => {
   res.status(404).send('Not found')
 })
 
-io.set('origins', '*:*')
-
 io.on('connection', socket => {
   const { user } = socket.handshake.query
   connectedUsers[user] = socket.id

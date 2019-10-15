@@ -45,6 +45,7 @@ export default function Main({ navigation }) {
 			})
 
 			socket.on('match', dev => {
+				console.log('===MATCH DATA===', dev)
 					setMatchDev(dev)
 			})
 	}, [id])

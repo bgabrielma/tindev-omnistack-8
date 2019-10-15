@@ -3,6 +3,16 @@ const { authSecret } = require('../.env')
 const { auth, errorInvalidKey, invalidDataReceived } = require('../utils/functions')
 
 module.exports = app => {
+  const findUserByUsername = async user => {
+    let userToReturn  = {}
+    await app.db('user').first().where({ id: user })
+      .then(user => userToReturn = user)
+
+    console.log('===MATCH DATA===', userToReturn)
+
+    return userToReturn
+  }
+
   const newLike = (req, res) => {
     const { giver } = req.body
     const { destination } = req.params
@@ -31,7 +41,7 @@ module.exports = app => {
         id_giver: destination,
         id_receiver: giver
       })
-      .then(res => {
+      .then(async res => {
         console.log(res)
         if (res.length > 0) {
           /* match */
@@ -39,17 +49,21 @@ module.exports = app => {
           const targetSocket = app.connectedUsers[destination]
 
           if (loggedSocket) {
-            app.db('user').first().where({ id: destination })
+            /* app.db('user').first().where({ id: destination })
               .then(data => {
                 app.io.to(loggedSocket).emit('match', data)
               })
+            */
+              app.io.to(loggedSocket).emit('match', await findUserByUsername(destination))
           }
 
           if (targetSocket) {
-            app.db('user').first().where({ id: giver })
+            /* app.db('user').first().where({ id: giver })
               .then(data => {
                 app.io.to(targetSocket).emit('match', data)
               })
+            */
+           app.io.to(targetSocket).emit('match', await findUserByUsername(giver))
           }
         }
       })
